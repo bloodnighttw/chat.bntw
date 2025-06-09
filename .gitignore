@@ -6,3 +6,6 @@
 /build/
 
 .env
+
+/drizzle
+/app/server/db/better-auth.ts

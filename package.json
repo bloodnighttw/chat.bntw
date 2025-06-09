@@ -7,9 +7,8 @@
     "dev": "react-router dev",
     "start": "node ./build/server/index.js",
     "typecheck": "react-router typegen && tsc",
-    "db:push": "drizzle-kit push",
-    "db:generate": "drizzle-kit generate",
-    "db:migrate": "drizzle-kit migrate"
+    "db:update": "pnpx @better-auth/cli@latest generate --output app/server/db/better-auth.ts --y && drizzle-kit push",
+    "db:auth": "pnpx @better-auth/cli@latest generate --output app/server/db/better-auth.ts --y"
   },
   "dependencies": {
     "@ai-sdk/google": "^1.2.19",
@@ -18,10 +17,13 @@
     "@react-router/node": "^7.5.3",
     "@react-router/serve": "^7.5.3",
     "ai": "^4.3.16",
+    "better-auth": "^1.2.8",
+    "dotenv": "^16.5.0",
     "drizzle-orm": "^0.44.2",
     "hono": "^4.7.11",
     "isbot": "^5.1.27",
     "pg": "^8.16.0",
+    "postgres": "^3.4.7",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-markdown": "^10.1.0",
@@ -37,6 +39,7 @@
     "@types/react-dom": "^19.1.2",
     "drizzle-kit": "^0.31.1",
     "tailwindcss": "^4.1.4",
+    "tsx": "^4.19.4",
     "typescript": "^5.8.3",
     "vite": "^6.3.3",
     "vite-tsconfig-paths": "^5.1.4"

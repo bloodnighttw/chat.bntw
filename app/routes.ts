@@ -8,7 +8,10 @@ import {
 
 export default [
   ...prefix("/chat", [
-    layout("components/layout/chat.tsx", [index("routes/chat/index.tsx")]),
+    layout("components/layout/chat.tsx", [
+      index("routes/chat/index.tsx"),
+      route(":id", "routes/chat/[id].tsx"),
+    ]),
   ]),
   layout("components/layout/auth.tsx", [
     route("/login", "routes/login.tsx"),

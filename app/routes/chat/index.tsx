@@ -1,6 +1,9 @@
 import React from "react";
+import { useNavigate } from "react-router";
 import { requiredAuth } from "~/lib/auth-client";
+import { cn } from "~/lib/utils";
 import type { ChatRoom } from "~/server/db/chat";
+import type { ChatMessageData } from "./type";
 
 export const clientLoader = requiredAuth;
 
@@ -8,9 +11,17 @@ export default function Chat() {
   const divRef = React.useRef<HTMLDivElement>(null);
   const [error, setError] = React.useState<string | null>(null);
   const [isLoading, setIsLoading] = React.useState(false);
+  const navigate = useNavigate();
+
   const sendRequest = async () => {
     if (!divRef.current) {
       console.error("Div reference is not set.");
+      return;
+    }
+
+    // if the div is empty, show an error
+    if (divRef.current.innerText.trim() === "") {
+      setError("Please enter some content in the chat.");
       return;
     }
 
@@ -20,19 +31,22 @@ export default function Chat() {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        message: divRef.current?.innerText || "",
-      }),
     });
     if (!response.ok) {
       const errorData = await response.json();
       setError(errorData.error || "An error occurred");
       return;
     }
-    const data = await response.json() as ChatRoom;
+    const data = (await response.json()) as ChatRoom;
     console.log("Response from server:", data);
     setError(null); // Clear any previous errors
     setIsLoading(false);
+    const state: ChatMessageData = {
+      content: divRef.current.innerText, // Get the content of the div
+    };
+    navigate(`/chat/${data.id}`, {
+      state,
+    }); // Navigate to the chat room page
   };
 
   return (
@@ -49,7 +63,9 @@ export default function Chat() {
       ) : (
         <button
           onClick={sendRequest}
-          className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+          className={cn(
+            "mt-4 px-4 py-2 text-white rounded focus:outline-none border border-gray-30"
+          )}
         >
           Send Request
         </button>

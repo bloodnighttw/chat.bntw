@@ -110,7 +110,7 @@ export default function SignUp() {
   }
 
   return (
-    <Card className="min-w-xl">
+    <Card className="max-w-xl w-full m-2">
       <CardHeader>
         <CardTitle>Sign Up</CardTitle>
         <CardDescription>Create a new account to get started.</CardDescription>
@@ -161,8 +161,8 @@ export default function SignUp() {
         {error ? (
           <div className="text-red-500 mt-2">{error}</div>
         ) : (
-          <div className="text-zinc-400">
-            already have account? Sign In{" "}
+          <div className="ml-auto text-zinc-400 text-sm">
+            already have account? Login {" "}
             <Link to={{ pathname: "/login" }} className="text-zinc-100">here</Link>!
           </div>
         )}

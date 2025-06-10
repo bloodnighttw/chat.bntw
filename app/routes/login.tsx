@@ -1,6 +1,6 @@
 import { Label } from "@radix-ui/react-label";
 import React from "react";
-import { redirect, useNavigate } from "react-router";
+import { Link, redirect, useNavigate } from "react-router";
 import { Button } from "~/components/ui/button";
 import {
   Card,
@@ -95,7 +95,7 @@ export default function Login() {
   }
 
   return (
-    <Card className="min-w-xl">
+    <Card className="max-w-xl w-full m-2">
       <CardHeader>
         <CardTitle>Login</CardTitle>
         <CardDescription>
@@ -132,10 +132,20 @@ export default function Login() {
           </div>
         </form>
       </CardContent>
-      <CardFooter>
+      <CardFooter className="gap-4">
         <Button type="submit" onClick={submitForm}>
           Login
         </Button>
+        <div className="ml-auto text-zinc-400 text-sm">
+          Don't have an account?{" "}
+          <Link
+            to={{pathname: "/signup"}}
+            className="text-blue-500 hover:underline"
+            tabIndex={4}
+          >
+            Sign Up
+          </Link>
+        </div>
       </CardFooter>
     </Card>
   );

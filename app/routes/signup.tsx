@@ -11,7 +11,7 @@ import {
   CardTitle,
 } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
-import { getSession, signUp } from "~/utils/auth-client";
+import { getSession, signUp } from "~/lib/auth-client";
 
 export async function clientLoader() {
   const session = await getSession();

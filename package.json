@@ -33,9 +33,11 @@
     "react-dom": "^19.1.0",
     "react-markdown": "^10.1.0",
     "react-router": "^7.5.3",
-    "tailwind-merge": "^3.3.0"
+    "tailwind-merge": "^3.3.0",
+    "zod": "^3.25.57"
   },
   "devDependencies": {
+    "@better-auth/cli": "^1.2.9",
     "@react-router/dev": "^7.5.3",
     "@tailwindcss/typography": "^0.5.16",
     "@tailwindcss/vite": "^4.1.4",

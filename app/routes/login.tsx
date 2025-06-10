@@ -11,14 +11,9 @@ import {
   CardTitle,
 } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
-import { getSession, signIn } from "~/lib/auth-client";
+import { redirectAuthed, signIn } from "~/lib/auth-client";
 
-export async function clientLoader() {
-  const session = await getSession();
-  if (session.data) {
-    return redirect("/"); // Redirect to home if already logged in
-  }
-}
+export const clientLoader = redirectAuthed; 
 
 function Success() {
   const [counter, setCounter] = React.useState(2);

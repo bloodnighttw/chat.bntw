@@ -6,7 +6,7 @@ export const { signIn, signUp, useSession, getSession } = createAuthClient()
 export const redirectAuthed = async () => {
   const session = await getSession();
   if (session.data) {
-    redirect("/chat"); // Redirect to home if already logged in
+    return redirect("/chat"); // Redirect to home if already logged in
   }
 }
 

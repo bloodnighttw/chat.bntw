@@ -9,6 +9,6 @@ export default [
   index("routes/home.tsx"),
   layout("components/layout/auth.tsx", [
     route("/login", "routes/login.tsx"),
-    route("/register", "routes/signup.tsx"),
+    route("/signup", "routes/signup.tsx"),
   ]),
 ] satisfies RouteConfig;

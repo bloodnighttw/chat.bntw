@@ -22,7 +22,7 @@ chat.post("/", async (c) => {
     return c.json({ error: "Unauthorized" }, 401);
   }
 
-  const ids = await db.insert(chatRoom).values({}).returning({id: chatRoom.id})
+  const ids = await db.insert(chatRoom).values({}).returning({id: chatRoom.uuid})
   
   // return the chat uuid
   return c.json({ id: ids[0].id });

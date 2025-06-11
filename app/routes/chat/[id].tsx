@@ -1,4 +1,4 @@
-import { useLocation } from "react-router";
+import { useLocation, useNavigate } from "react-router";
 import { useChat } from "@ai-sdk/react";
 import Markdown from "react-markdown";
 import type { Route } from "./+types/[id]";
@@ -7,6 +7,7 @@ import { requiredAuth } from "~/lib/auth-client";
 import type { ChatStream } from "~/server/chat";
 import { useApi as useAPI } from "~/lib/hook";
 import type { Message } from "ai";
+import { useEffect } from "react";
 
 export const clientLoader = requiredAuth;
 
@@ -15,29 +16,35 @@ export default function Chat({ params }: Route.ComponentProps) {
   const state = (location.state["content"] as string) ?? "";
 
   const appendBody: ChatStream = {
-    provider: "openai",
-    model: "gpt-4",
+    provider: "google",
+    model: "gemini-1.5-flash",
   };
 
-  const { messages, handleInputChange, handleSubmit, input, setMessages, setInput, status } =
-    useChat({
-      api: `/api/chat/${params.id}`,
-      id: params.id,
-      body: appendBody,
-      initialInput: state,
-    });
+  const {
+    messages,
+    handleInputChange,
+    handleSubmit,
+    input,
+    setMessages,
+    setInput,
+    status,
+  } = useChat({
+    api: `/api/chat/${params.id}`,
+    id: params.id,
+    body: appendBody,
+    initialInput: state,
+  });
 
   const { data, error, isLoading } = useAPI<Message[]>(
     `/chat/${params.id}`,
     (res) => {
       if (res) {
         if (res.length === 0) {
-          handleSubmit()
-        }
-        else {
+          handleSubmit();
+        } else {
           setInput("");
-          setMessages(res)
-        };
+          setMessages(res);
+        }
       }
     }
   );
@@ -82,7 +89,7 @@ export default function Chat({ params }: Route.ComponentProps) {
       <form onSubmit={handleSubmit}>
         <textarea
           name="prompt"
-          value={input}
+          value={data ? input : ""}
           onChange={handleInputChange}
           className="w-[1200px]"
         />

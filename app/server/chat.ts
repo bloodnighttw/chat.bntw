@@ -122,7 +122,18 @@ chat.post("/:id", async (c) => {
 
   const { messages }: { messages: UIMessage[] } = body;
 
-  // console.log("Received messages:", JSON.stringify(messages, null, 2));
+  // save latest message to database
+  const lastMessage = messages[messages.length - 1];
+  const coreMessages: CoreMessage[] = convertToCoreMessages(messages);
+  const a = await messageToDb({
+    chatId,
+    coreMessages,
+  });
+
+  if(a.length === 0) {
+    console.error("Failed to save message to database");
+    return c.json({ error: "Failed to save message to database" }, 500);
+  }
 
   const provider = createProvider(parsedBody.data.provider);
   const model = parsedBody.data.model;
@@ -132,8 +143,11 @@ chat.post("/:id", async (c) => {
     messages,
     onFinish: async (e) => {
       const response = e.response.messages
-      await messageToDb({ chatId, coreMessages: response})
-      console.log("Message stored in database:", response);
+      const m = await messageToDb({ chatId, coreMessages: response})
+      if( m.length === 0) {
+        console.error("Failed to store message in database");
+        return;
+      }
     }
   });
 
@@ -186,8 +200,6 @@ chat.get("/:id", async (c) => {
     .from(messages)
     .where(eq(messages.chatId, chatId))
     .orderBy(asc(messages.createdAt))
-
-  console.log("Messages retrieved from database:", messageInfo);
 
   return c.json(messageInfo);
 });

@@ -7,8 +7,8 @@ import { createOpenAI } from "@ai-sdk/openai";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { convertToCoreMessages, streamText, type CoreMessage, type UIMessage } from "ai";
 import { stream } from "hono/streaming";
-import { eq, and } from "drizzle-orm";
-import { messageToDb } from "./db/chat/message";
+import { eq, and, asc} from "drizzle-orm";
+import { messages, messageToDb } from "./db/chat/message";
 
 export const chat = new Hono<{
   Variables: {
@@ -78,14 +78,6 @@ function createProvider(provider: string) {
   }
 }
 
-function storeToDb(data: CoreMessage[]) {
-  for (const message of data) {
-    // Here you would implement the logic to store the message in the database
-    // For example, you could insert it into a messages table
-    console.log("Storing message:", message);
-  }  
-}
-
 chat.post("/:id", async (c) => {
   const session = await auth.api.getSession({ headers: c.req.raw.headers });
   if (!session || !session.user) {
@@ -150,4 +142,52 @@ chat.post("/:id", async (c) => {
   c.header("Connection", "keep-alive");
 
   return stream(c, (stream) => {return stream.pipe(result.toDataStream())});
+});
+
+
+chat.get("/:id", async (c) => {
+  const session = await auth.api.getSession({ headers: c.req.raw.headers });
+  if (!session || !session.user) {
+    return c.json({ error: "Unauthorized" }, 401);
+  }
+
+  const chatId = c.req.param("id");
+  const userId = session.user.id;
+
+  // check if the chat room exists and the user is a member of the chat room
+  const chatRoomExists = await db
+    .select()
+    .from(chatRoom)
+    .where(eq(chatRoom.uuid, chatId))
+    .then((res) => res.length > 0);
+
+  if (!chatRoomExists) {
+    return c.json({ error: "Chat room does not exist" }, 404);
+  }
+
+  const userIsMember = await db
+    .select()
+    .from(chatToUser)
+    .where(
+      and(
+        eq(chatToUser.userId, userId),
+        eq(chatToUser.chatUUID, chatId)
+      )
+    )
+    .then((res) => res.length > 0);
+
+  if (!userIsMember) {
+    return c.json({ error: "User is not a member of the chat room" }, 403);
+  }
+
+  // get the messages in the chat room
+  const messageInfo = await db
+    .select()
+    .from(messages)
+    .where(eq(messages.chatId, chatId))
+    .orderBy(asc(messages.createdAt))
+
+  console.log("Messages retrieved from database:", messageInfo);
+
+  return c.json(messageInfo);
 });

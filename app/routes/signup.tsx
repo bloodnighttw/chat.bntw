@@ -1,6 +1,6 @@
 import { Label } from "@radix-ui/react-label";
 import React, { useEffect, useState } from "react";
-import { Link, redirect, useNavigate } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { Button } from "~/components/ui/button";
 import {
   Card,
@@ -11,7 +11,7 @@ import {
   CardTitle,
 } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
-import { getSession, redirectAuthed, signUp } from "~/lib/auth-client";
+import { redirectAuthed, signUp } from "~/lib/auth-client";
 
 export const clientLoader = redirectAuthed;
 

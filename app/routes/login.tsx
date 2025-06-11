@@ -1,6 +1,6 @@
 import { Label } from "@radix-ui/react-label";
 import React from "react";
-import { Link, redirect, useNavigate } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { Button } from "~/components/ui/button";
 import {
   Card,
@@ -13,7 +13,7 @@ import {
 import { Input } from "~/components/ui/input";
 import { redirectAuthed, signIn } from "~/lib/auth-client";
 
-export const clientLoader = redirectAuthed; 
+export const clientLoader = redirectAuthed;
 
 function Success() {
   const [counter, setCounter] = React.useState(2);
@@ -30,38 +30,31 @@ function Success() {
       });
     }, 1000);
     return () => clearInterval(interval);
-  }
-  , [navigate]);
+  }, [navigate]);
   return (
     <Card className="min-w-xl">
       <CardHeader>
         <CardTitle>Login Successful!</CardTitle>
-        <CardDescription>
-          You can now access your account.
-        </CardDescription>
+        <CardDescription>You can now access your account.</CardDescription>
       </CardHeader>
       <CardFooter className="flex-col gap-2 items-start">
         <p className="dark:text-zinc-500">
           You will be redirected to the home page in {counter} seconds.
         </p>
-        <Button onClick={() => navigate("/")}>
-          Go to Home
-        </Button>
+        <Button onClick={() => navigate("/")}>Go to Home</Button>
       </CardFooter>
     </Card>
   );
 }
 
-
 export default function Login() {
-
   const formRef = React.useRef<HTMLFormElement>(null);
   const [success, setSuccess] = React.useState(false);
 
-  if(success){
+  if (success) {
     return <Success />;
   }
-  
+
   const submitForm = async (event: React.FormEvent) => {
     event.preventDefault();
     if (!formRef.current) {
@@ -77,7 +70,7 @@ export default function Login() {
     }
 
     try {
-      const response = await signIn.email({email, password});
+      const response = await signIn.email({ email, password });
       if (response.error) {
         console.error("Login failed:", response.error);
       } else {
@@ -87,7 +80,7 @@ export default function Login() {
     } catch (error) {
       console.error("An error occurred during login:", error);
     }
-  }
+  };
 
   return (
     <Card className="max-w-xl w-full m-2">
@@ -122,7 +115,14 @@ export default function Login() {
                   Forgot your password?
                 </a>
               </div>
-              <Input id="password" type="password" name="password" placeholder="Passowrd" tabIndex={2} required />
+              <Input
+                id="password"
+                type="password"
+                name="password"
+                placeholder="Passowrd"
+                tabIndex={2}
+                required
+              />
             </div>
           </div>
         </form>
@@ -132,9 +132,9 @@ export default function Login() {
           Login
         </Button>
         <div className="ml-auto text-zinc-400 text-sm">
-          Don't have an account?{" "}
+          {"Don't have an account? "}
           <Link
-            to={{pathname: "/signup"}}
+            to={{ pathname: "/signup" }}
             className="text-blue-500 hover:underline"
             tabIndex={4}
           >

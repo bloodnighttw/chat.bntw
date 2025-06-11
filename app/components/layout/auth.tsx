@@ -1,5 +1,4 @@
 import { Outlet } from "react-router";
-import { Card } from "../ui/card";
 
 export default function AuthLayout() {
   return (

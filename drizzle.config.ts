@@ -1,14 +1,14 @@
-import 'dotenv/config';
-import { defineConfig } from 'drizzle-kit';
+import "dotenv/config";
+import { defineConfig } from "drizzle-kit";
 
 export default defineConfig({
-  out: './drizzle',
+  out: "./drizzle",
   schema: [
-    './app/server/db/chat/index.ts',
-    './app/server/db/chat/message.ts',
-    './app/server/db/better-auth.ts'
+    "./app/server/db/chat/index.ts",
+    "./app/server/db/chat/message.ts",
+    "./app/server/db/better-auth.ts"
   ],
-  dialect: 'postgresql',
+  dialect: "postgresql",
   dbCredentials: {
     url: process.env.DATABASE_URL!,
   },

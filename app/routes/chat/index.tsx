@@ -2,8 +2,6 @@ import React from "react";
 import { useNavigate } from "react-router";
 import { requiredAuth } from "~/lib/auth-client";
 import { cn } from "~/lib/utils";
-import type { ChatRoom } from "~/server/db/chat";
-import type { ChatMessageData } from "./type";
 
 export const clientLoader = requiredAuth;
 

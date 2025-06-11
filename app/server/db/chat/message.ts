@@ -1,5 +1,5 @@
 import type { CoreMessage } from "ai";
-import { or, relations } from "drizzle-orm";
+import { relations } from "drizzle-orm";
 
 import {
   pgTable,
@@ -25,7 +25,7 @@ export const messages = pgTable("messages", {
   // the raw text of the message
   content: text("content").notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
-  annotations: json("annotations").$type<Array<any>>(),
+  annotations: json("annotations").$type<Array<unknown>>(),
   // Store serialized attachments as JSON
   attachments: json("attachments").$type<
     Array<{

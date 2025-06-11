@@ -60,6 +60,7 @@ const chatStream = z.object({
     z.literal("gpt-4"),
     z.literal("gemini-1.5-flash"),
     z.literal("gemini-1.5-pro"),
+    z.literal("gemini-2.0-flash")
   ]),
 });
 
@@ -124,7 +125,7 @@ chat.post("/:id", async (c) => {
 
   // save latest message to database
   const lastMessage = messages[messages.length - 1];
-  const coreMessages: CoreMessage[] = convertToCoreMessages(messages);
+  const coreMessages: CoreMessage[] = convertToCoreMessages([lastMessage]);
   const a = await messageToDb({
     chatId,
     coreMessages,

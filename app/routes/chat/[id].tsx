@@ -1,4 +1,4 @@
-import { useLocation, useNavigate } from "react-router";
+import { useLocation } from "react-router";
 import { useChat } from "@ai-sdk/react";
 import Markdown from "react-markdown";
 import type { Route } from "./+types/[id]";
@@ -7,7 +7,6 @@ import { requiredAuth } from "~/lib/auth-client";
 import type { ChatStream } from "~/server/chat";
 import { useApi as useAPI } from "~/lib/hook";
 import type { Message } from "ai";
-import { useEffect } from "react";
 
 export const clientLoader = requiredAuth;
 
@@ -17,7 +16,7 @@ export default function Chat({ params }: Route.ComponentProps) {
 
   const appendBody: ChatStream = {
     provider: "google",
-    model: "gemini-1.5-flash",
+    model: "gemini-2.0-flash",
   };
 
   const {

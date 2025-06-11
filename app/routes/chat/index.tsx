@@ -40,7 +40,6 @@ export default function Chat() {
     const data = (await response.json()) as ChatRoom;
     console.log("Response from server:", data);
     setError(null); // Clear any previous errors
-    setIsLoading(false);
     const state: ChatMessageData = {
       content: divRef.current.innerText, // Get the content of the div
     };

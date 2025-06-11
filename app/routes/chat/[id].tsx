@@ -10,7 +10,7 @@ import type { ChatStream } from "~/server/chat";
 
 export const clientLoader = requiredAuth;
 
-export default function Chat(a: Route.ComponentProps) {
+export default function Chat({params}: Route.ComponentProps) {
   const location = useLocation();
   const state: ChatMessageData | null =
     location.state as ChatMessageData | null;
@@ -21,8 +21,8 @@ export default function Chat(a: Route.ComponentProps) {
   }
 
   const { messages, handleInputChange, handleSubmit, input } = useChat({
-    api: "/api/chat/stream",
-    id: a.params.id,
+    api: `/api/chat/${params.id}`,
+    id: params.id,
     initialInput: state?.content || "",
     body: {
       provider: "google",

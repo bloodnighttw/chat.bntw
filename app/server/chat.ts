@@ -1,13 +1,14 @@
 import { Hono } from "hono";
 import { db } from "./db";
-import { chatRoom, chatRoomUser } from "./db/chat";
+import { chatRoom, chatToUser } from "./db/chat";
 import { auth } from "~/auth";
 import { z } from "zod/v4";
 import { createOpenAI } from "@ai-sdk/openai";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
-import { streamText, type UIMessage } from "ai";
+import { convertToCoreMessages, streamText, type CoreMessage, type UIMessage } from "ai";
 import { stream } from "hono/streaming";
 import { eq, and } from "drizzle-orm";
+import { messageToDb } from "./db/chat/message";
 
 export const chat = new Hono<{
   Variables: {
@@ -37,7 +38,7 @@ chat.post("/", async (c) => {
   // add the user to the chat room
   const userId = session.user.id;
   const chatUUID = ids[0].id!;
-  const result = await db.insert(chatRoomUser).values({
+  const result = await db.insert(chatToUser).values({
     chatUUID,
     userId,
     level: 0, // default owner level, since the user just created the chat room yet.
@@ -77,6 +78,14 @@ function createProvider(provider: string) {
   }
 }
 
+function storeToDb(data: CoreMessage[]) {
+  for (const message of data) {
+    // Here you would implement the logic to store the message in the database
+    // For example, you could insert it into a messages table
+    console.log("Storing message:", message);
+  }  
+}
+
 chat.post("/:id", async (c) => {
   const session = await auth.api.getSession({ headers: c.req.raw.headers });
   if (!session || !session.user) {
@@ -106,11 +115,11 @@ chat.post("/:id", async (c) => {
   const userId = session.user.id;
   const userIsMember = await db
     .select()
-    .from(chatRoomUser)
+    .from(chatToUser)
     .where(
       and(
-        eq(chatRoomUser.userId, userId),
-        eq(chatRoomUser.chatUUID, chatId)
+        eq(chatToUser.userId, userId),
+        eq(chatToUser.chatUUID, chatId)
       )
     )
     .then((res) => res.length > 0);
@@ -121,17 +130,24 @@ chat.post("/:id", async (c) => {
 
   const { messages }: { messages: UIMessage[] } = body;
 
+  // console.log("Received messages:", JSON.stringify(messages, null, 2));
+
   const provider = createProvider(parsedBody.data.provider);
   const model = parsedBody.data.model;
 
   const result = streamText({
     model: provider(model),
     messages,
+    onFinish: async (e) => {
+      const response = e.response.messages
+      await messageToDb({ chatId, coreMessages: response})
+      console.log("Message stored in database:", response);
+    }
   });
 
   c.header("Content-Type", "text/plain; charset=utf-8");
   c.header("Transfer-Encoding", "chunked");
   c.header("Connection", "keep-alive");
 
-  return stream(c, (stream) => stream.pipe(result.toDataStream()));
+  return stream(c, (stream) => {return stream.pipe(result.toDataStream())});
 });

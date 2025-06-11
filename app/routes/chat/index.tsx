@@ -37,10 +37,10 @@ export default function Chat() {
       setError(errorData.error || "An error occurred");
       return;
     }
-    const data = (await response.json()) as ChatRoom;
+    const data = (await response.json()) as {id: string};
     console.log("Response from server:", data);
     setError(null); // Clear any previous errors
-    const state: ChatMessageData = {
+    const state= {
       content: divRef.current.innerText, // Get the content of the div
     };
     navigate(`/chat/${data.id}`, {

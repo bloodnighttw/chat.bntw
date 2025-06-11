@@ -16,18 +16,15 @@ export default function Chat({params}: Route.ComponentProps) {
     location.state as ChatMessageData | null;
 
   const appendBody:ChatStream = {
-    provider: "google",
-    model: "gemini-1.5-flash",
+    provider: "openai",
+    model: "gpt-4",
   }
 
   const { messages, handleInputChange, handleSubmit, input } = useChat({
     api: `/api/chat/${params.id}`,
     id: params.id,
     initialInput: state?.content || "",
-    body: {
-      provider: "google",
-      model: "gemini-1.5-flash",
-    },
+    body: appendBody
   });
 
   useEffect(() => {

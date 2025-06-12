@@ -92,10 +92,8 @@ export default function ChatBox(props: ChatBoxProps) {
               {provider ? provider : "Select Provider"}
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-24">
-            <div className="flex justify-center">
-              <DropdownMenuLabel>Provider</DropdownMenuLabel>
-            </div>
+          <DropdownMenuContent className="w-24" align="start">
+              <DropdownMenuLabel className="text-center">Provider</DropdownMenuLabel>
             <DropdownMenuSeparator />
             {
               // get the providers from the data, which is in the key of the data object

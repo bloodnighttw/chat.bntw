@@ -3,11 +3,12 @@ import { useChat } from "@ai-sdk/react";
 import Markdown from "react-markdown";
 import type { Route } from "./+types/[id]";
 import { requiredAuth } from "~/lib/auth-client";
-import type { ChatStream } from "~/server/chat";
+import type { ChatStream, Models } from "~/server/chat";
 import type { Message } from "ai";
 import ChatBox from "~/components/modules/chatbox";
 import remarkGFM from "remark-gfm";
 import { useAPI } from "~/lib/hooks/api";
+import { useCallback } from "react";
 
 export const clientLoader = requiredAuth;
 
@@ -47,6 +48,22 @@ export default function Chat({ params }: Route.ComponentProps) {
     }
   );
 
+  const handleActuallySubmit = useCallback((provider: keyof Models, model: string) => {
+    const appendBody: ChatStream = {
+      provider,
+      model,
+    };
+
+    handleSubmit(undefined,{
+      body: appendBody
+    });
+
+  },[handleSubmit])
+
+  const handleInput = useCallback((text: string) => {
+    setInput(text);
+  }, [setInput]);
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -85,8 +102,8 @@ export default function Chat({ params }: Route.ComponentProps) {
       ))}
 
       <ChatBox
-        submit={() => handleSubmit()}
-        onInput={(text) => setInput(text)}
+        submit={handleActuallySubmit}
+        onInput={handleInput}
         className="sticky bottom-2"
         loading={ isLoading || status === "submitted" || status === "streaming" }
       />

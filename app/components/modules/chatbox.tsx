@@ -17,12 +17,14 @@ import useLocalStorage from "~/lib/hooks/localstorage";
 
 interface ChatBoxProps {
   className?: string;
-  submit?: (text: string) => void;
+  submit?: (provider: keyof Models, model: string) => void;
   onInput?: (text: string) => void;
   // if it's not empty, it will show an error message
   errorMessage?: string;
   // default is false
   loading?: boolean;
+  providerRef?: React.RefObject<keyof Models | null>;
+  modelRef?: React.RefObject<string | null>;
 }
 
 export default function ChatBox(props: ChatBoxProps) {
@@ -68,6 +70,19 @@ export default function ChatBox(props: ChatBoxProps) {
       console.error("Div reference is not set.");
       return;
     }
+
+    // if no provider is selected, show an error
+    if (!preferProvider) {
+      console.error("No provider selected.");
+      return;
+    }
+
+    // if no model is selected, show an error
+    if (!preferModel[preferProvider]) {
+      console.error("No model selected for the provider.");
+      return;
+    }
+
     const content = ref.current.innerText.trim();
     if (content === "") {
       console.error("Content is empty.");
@@ -78,7 +93,7 @@ export default function ChatBox(props: ChatBoxProps) {
     ref.current.innerText = ""; // clear the content after submission
 
     // call the submit function with the content
-    props.submit?.(content);
+    props.submit?.(preferProvider, preferModel[preferProvider]);
   };
 
   const boxClickToFocus = () => {

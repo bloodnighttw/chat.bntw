@@ -54,10 +54,10 @@ chat.post("/", async (c) => {
 });
 
 const supportedProviders = ["openai", "google"] as const;
-const supportedModels = {
+const supportedModels: Record<(typeof supportedProviders)[number], readonly string[]> = {
   openai: ["gpt-3.5-turbo", "gpt-4"],
   google: ["gemini-1.5-flash", "gemini-1.5-pro", "gemini-2.0-flash"], 
-}
+} as const;
 
 const allModels = [...supportedModels.openai, ...supportedModels.google];
 

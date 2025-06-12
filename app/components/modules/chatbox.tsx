@@ -2,7 +2,7 @@ import { cn } from "~/lib/utils";
 import { Card } from "../ui/card";
 import { Button } from "../ui/button";
 import { SendHorizonal } from "lucide-react";
-import { useRef, useState } from "react";
+import { useRef } from "react";
 import { useAPI } from "~/lib/hooks/api";
 import type { Models } from "~/server/chat";
 import {
@@ -13,6 +13,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
+import useLocalStorage from "~/lib/hooks/localstorage";
 
 interface ChatBoxProps {
   className?: string;
@@ -26,11 +27,40 @@ interface ChatBoxProps {
 
 export default function ChatBox(props: ChatBoxProps) {
   const ref = useRef<HTMLDivElement>(null);
+  const [preferModel, _setPreferences] = useLocalStorage<
+    Record<string, string>
+  >("provider-model", {});
+  const [preferProvider, setPreferProvider] = useLocalStorage<
+    keyof Models | null
+  >("provider", null);
 
-  const [provider, setProvider] = useState<string | null>(null);
-  const { data, isLoading } = useAPI<Models>("/chat", (res) => setProvider((v)=> v ? v : Object.keys(res)[0]), {
-    dedupingInterval: 1000 * 60 * 60, // 1 hour
-  });
+  // you can only set 1 key-value pair at one life cycle
+  const setPreferModel = (key: string, value: string) => {
+    _setPreferences({ ...preferModel, [key]: value });
+  };
+
+  const { data, isLoading } = useAPI<Models>(
+    "/chat",
+    (res) => {
+      const missingPreference: Record<string, string> = {};
+      Object.keys(res).forEach((p) => {
+        if (!preferModel[p]) {
+          // set the default model for the provider
+          const lastModel =
+            res[p as keyof Models][res[p as keyof Models].length - 1];
+          missingPreference[p] = lastModel;
+        }
+      });
+
+      _setPreferences({
+        ...preferModel,
+        ...missingPreference,
+      });
+    },
+    {
+      dedupingInterval: 1000 * 60 * 60, // 1 hour
+    }
+  );
 
   const handleSubmit = () => {
     // get the content of the div
@@ -89,26 +119,54 @@ export default function ChatBox(props: ChatBoxProps) {
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="secondary" className="h-6 text-sm">
-              {provider ? provider : "Select Provider"}
+              {preferProvider ? preferProvider : "Select Provider"}
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="w-24" align="start">
-              <DropdownMenuLabel className="text-center">Provider</DropdownMenuLabel>
+            <DropdownMenuLabel className="text-center">
+              Provider
+            </DropdownMenuLabel>
             <DropdownMenuSeparator />
             {
               // get the providers from the data, which is in the key of the data object
               data &&
                 Object.keys(data).map((p) => (
                   <DropdownMenuCheckboxItem
-                    key={provider}
+                    key={p}
                     className="text-sm"
-                    checked={provider === p}
-                    onClick={()=> setProvider(p)}
+                    checked={preferProvider === p}
+                    onClick={() => setPreferProvider(p as keyof Models)}
                   >
                     {p}
                   </DropdownMenuCheckboxItem>
                 ))
             }
+          </DropdownMenuContent>
+        </DropdownMenu>
+
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="secondary" className="h-6 text-sm ml-2">
+              {preferProvider && preferModel[preferProvider]
+                ? preferModel[preferProvider]
+                : "Select Model"}
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent className="w-48" align="start">
+            <DropdownMenuLabel className="text-center">Model</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            {data &&
+              preferProvider &&
+              data[preferProvider].map((model) => (
+                <DropdownMenuCheckboxItem
+                  key={model}
+                  className="text-sm"
+                  checked={preferModel[preferProvider] === model}
+                  onClick={() => setPreferModel(preferProvider, model)}
+                >
+                  {model}
+                </DropdownMenuCheckboxItem>
+              ))}
           </DropdownMenuContent>
         </DropdownMenu>
 

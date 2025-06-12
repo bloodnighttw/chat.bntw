@@ -45,6 +45,7 @@ export default [
       // React Hooks rules
       ...reactHooks.configs.recommended.rules,
       "quotes": ["error", "double"],
+      "prefer-const": "error",
       "@typescript-eslint/consistent-type-imports": "error",
       
       // Custom React rules

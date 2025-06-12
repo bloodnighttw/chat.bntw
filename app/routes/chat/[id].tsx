@@ -2,11 +2,11 @@ import { useLocation } from "react-router";
 import { useChat } from "@ai-sdk/react";
 import Markdown from "react-markdown";
 import type { Route } from "./+types/[id]";
-import { Button } from "~/components/ui/button";
 import { requiredAuth } from "~/lib/auth-client";
 import type { ChatStream } from "~/server/chat";
 import { useApi as useAPI } from "~/lib/hook";
 import type { Message } from "ai";
+import ChatBox from "~/components/modules/chatbox";
 
 export const clientLoader = requiredAuth;
 
@@ -21,9 +21,7 @@ export default function Chat({ params }: Route.ComponentProps) {
 
   const {
     messages,
-    handleInputChange,
     handleSubmit,
-    input,
     setMessages,
     setInput,
     status,
@@ -85,17 +83,10 @@ export default function Chat({ params }: Route.ComponentProps) {
         </div>
       ))}
 
-      <form onSubmit={handleSubmit}>
-        <textarea
-          name="prompt"
-          value={data ? input : ""}
-          onChange={handleInputChange}
-          className="w-[1200px]"
-        />
-      </form>
-      <Button onClick={handleSubmit} className="mt-4">
-        Send Message
-      </Button>
+      <ChatBox
+        submit={() => handleSubmit()}
+        onInput={(text) => setInput(text)}
+      />
       <div className="mt-4">
         <h2 className="text-xl font-semibold">Status: {status}</h2>
       </div>

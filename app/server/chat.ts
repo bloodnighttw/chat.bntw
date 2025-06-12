@@ -53,15 +53,26 @@ chat.post("/", async (c) => {
   return c.json({ id: ids[0].id });
 });
 
+const supportedProviders = ["openai", "google"] as const;
+const supportedModels = {
+  openai: ["gpt-3.5-turbo", "gpt-4"],
+  google: ["gemini-1.5-flash", "gemini-1.5-pro", "gemini-2.0-flash"], 
+}
+
+const allModels = [...supportedModels.openai, ...supportedModels.google];
+
 const chatStream = z.object({
-  provider: z.union([z.literal("openai"), z.literal("google")]),
-  model: z.union([
-    z.literal("gpt-3.5-turbo"),
-    z.literal("gpt-4"),
-    z.literal("gemini-1.5-flash"),
-    z.literal("gemini-1.5-pro"),
-    z.literal("gemini-2.0-flash")
-  ]),
+  provider: z.enum(supportedProviders),
+  model: z.enum(allModels),
+}).refine((data) => {
+  // Ensure the model is valid for the provider
+  const providerModels = supportedModels[data.provider];
+
+  if (!providerModels.includes(data.model)) {
+    return false;
+  }
+
+  return true;
 });
 
 export type ChatStream = z.infer<typeof chatStream>;
@@ -78,6 +89,7 @@ function createProvider(provider: string) {
       throw new Error("Unsupported provider");
   }
 }
+
 
 chat.post("/:id", async (c) => {
   const session = await auth.api.getSession({ headers: c.req.raw.headers });
@@ -204,3 +216,8 @@ chat.get("/:id", async (c) => {
 
   return c.json(messageInfo);
 });
+
+
+chat.get("/", async (c) => {
+  return c.json(supportedModels)
+})

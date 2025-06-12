@@ -4,10 +4,10 @@ import Markdown from "react-markdown";
 import type { Route } from "./+types/[id]";
 import { requiredAuth } from "~/lib/auth-client";
 import type { ChatStream } from "~/server/chat";
-import { useApi as useAPI } from "~/lib/hook";
 import type { Message } from "ai";
 import ChatBox from "~/components/modules/chatbox";
 import remarkGFM from "remark-gfm";
+import { useAPI } from "~/lib/hooks/api";
 
 export const clientLoader = requiredAuth;
 

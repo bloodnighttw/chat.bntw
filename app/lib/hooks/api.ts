@@ -11,16 +11,16 @@ function fetcher<T>(runAfter?: (res:T) => void) {
   return a;
 }
 
-export function useApi<T, E = unknown>(
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function useAPI<T, E = any>(
   url: string,
   runAfter?: (res: T) => void,
   options?: SWRConfiguration<T>, 
 ) {
-  const swr = useSWR<T,E>(
+  const swr = useSWR<T, E>(
     `/api${url}`,
     fetcher(runAfter),
     {
-
       revalidateOnFocus: false,
       revalidateOnReconnect: false,
       ...options,
@@ -29,3 +29,5 @@ export function useApi<T, E = unknown>(
 
   return swr;
 }
+
+

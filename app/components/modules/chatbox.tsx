@@ -3,7 +3,7 @@ import { Card } from "../ui/card";
 import { Button } from "../ui/button";
 import { SendHorizonal } from "lucide-react";
 import { useRef, useState } from "react";
-import { useApi } from "~/lib/hook";
+import { useAPI } from "~/lib/hooks/api";
 import type { Models } from "~/server/chat";
 import {
   DropdownMenu,
@@ -28,7 +28,7 @@ export default function ChatBox(props: ChatBoxProps) {
   const ref = useRef<HTMLDivElement>(null);
 
   const [provider, setProvider] = useState<string | null>(null);
-  const { data, isLoading } = useApi<Models>("/chat", (res) => setProvider((v)=> v ? v : Object.keys(res)[0]), {
+  const { data, isLoading } = useAPI<Models>("/chat", (res) => setProvider((v)=> v ? v : Object.keys(res)[0]), {
     dedupingInterval: 1000 * 60 * 60, // 1 hour
   });
 

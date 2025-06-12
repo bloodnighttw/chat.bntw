@@ -26,7 +26,6 @@ export default function ChatBox(props: ChatBoxProps) {
     // call the submit function with the content
     props.submit?.(content);
     // clean the content of the div
-    ref.current.innerText = "";
   };
 
   const boxClickToFocus = () => {

@@ -87,6 +87,7 @@ export default function Chat({ params }: Route.ComponentProps) {
       <ChatBox
         submit={() => handleSubmit()}
         onInput={(text) => setInput(text)}
+        className="sticky bottom-2"
       />
       <div className="mt-4">
         <h2 className="text-xl font-semibold">Status: {status}</h2>

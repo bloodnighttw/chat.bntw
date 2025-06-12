@@ -7,6 +7,7 @@ import type { ChatStream } from "~/server/chat";
 import { useApi as useAPI } from "~/lib/hook";
 import type { Message } from "ai";
 import ChatBox from "~/components/modules/chatbox";
+import remarkGFM from "remark-gfm";
 
 export const clientLoader = requiredAuth;
 
@@ -79,7 +80,7 @@ export default function Chat({ params }: Route.ComponentProps) {
           className="prose prose-invert prose-zinc w-full max-w-[1200px]"
           key={message.id}
         >
-          <Markdown key={message.id}>{message.content}</Markdown>
+          <Markdown key={message.id} remarkPlugins={[remarkGFM]}>{message.content}</Markdown>
         </div>
       ))}
 

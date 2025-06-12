@@ -2,7 +2,17 @@ import { cn } from "~/lib/utils";
 import { Card } from "../ui/card";
 import { Button } from "../ui/button";
 import { SendHorizonal } from "lucide-react";
-import { useRef } from "react";
+import { useRef, useState } from "react";
+import { useApi } from "~/lib/hook";
+import type { Models } from "~/server/chat";
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "../ui/dropdown-menu";
 
 interface ChatBoxProps {
   className?: string;
@@ -16,6 +26,12 @@ interface ChatBoxProps {
 
 export default function ChatBox(props: ChatBoxProps) {
   const ref = useRef<HTMLDivElement>(null);
+
+  const [provider, setProvider] = useState<string | null>(null);
+  const { data, isLoading } = useApi<Models>("/chat", (res) => setProvider((v)=> v ? v : Object.keys(res)[0]), {
+    dedupingInterval: 1000 * 60 * 60, // 1 hour
+  });
+
   const handleSubmit = () => {
     // get the content of the div
     if (!ref.current) {
@@ -42,7 +58,7 @@ export default function ChatBox(props: ChatBoxProps) {
   return (
     <Card
       className={cn(
-        props.className, 
+        props.className,
         "p-3 w-[1200px] gap-2",
         props.loading && "opacity-90 cursor-not-allowed"
       )}
@@ -70,6 +86,37 @@ export default function ChatBox(props: ChatBoxProps) {
         }}
       />
       <div className="flex h-6">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="secondary" className="h-6 text-sm">
+              {provider ? provider : "Select Provider"}
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent className="w-24">
+            <div className="flex justify-center">
+              <DropdownMenuLabel>Provider</DropdownMenuLabel>
+            </div>
+            <DropdownMenuSeparator />
+            {
+              // get the providers from the data, which is in the key of the data object
+              data &&
+                Object.keys(data).map((p) => (
+                  <DropdownMenuCheckboxItem
+                    key={provider}
+                    className="text-sm"
+                    checked={provider === p}
+                    onClick={()=> setProvider(p)}
+                  >
+                    {p}
+                  </DropdownMenuCheckboxItem>
+                ))
+            }
+          </DropdownMenuContent>
+        </DropdownMenu>
+
+        {isLoading && (
+          <div className="ml-2 text-sm text-gray-500">Loading models...</div>
+        )}
         <Button
           variant="secondary"
           className="ml-auto h-6"

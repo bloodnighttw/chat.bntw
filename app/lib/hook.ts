@@ -1,4 +1,4 @@
-import useSWR from "swr";
+import useSWR, { type SWRConfiguration } from "swr";
 
 function fetcher<T>(runAfter?: (res:T) => void) {
   const a = (url: string, options?: RequestInit) =>
@@ -11,24 +11,21 @@ function fetcher<T>(runAfter?: (res:T) => void) {
   return a;
 }
 
-export function useApi<T>(
+export function useApi<T, E = unknown>(
   url: string,
   runAfter?: (res: T) => void,
-  options?: RequestInit
+  options?: SWRConfiguration<T>, 
 ) {
-  const { data, error, isLoading } = useSWR<T>(
+  const swr = useSWR<T,E>(
     `/api${url}`,
     fetcher(runAfter),
     {
-      ...options,
+
       revalidateOnFocus: false,
       revalidateOnReconnect: false,
+      ...options,
     }
   );
 
-  return {
-    data,
-    error,
-    isLoading,
-  };
+  return swr;
 }

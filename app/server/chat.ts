@@ -221,3 +221,5 @@ chat.get("/:id", async (c) => {
 chat.get("/", async (c) => {
   return c.json(supportedModels)
 })
+
+export type Models = typeof supportedModels

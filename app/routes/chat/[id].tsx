@@ -88,6 +88,7 @@ export default function Chat({ params }: Route.ComponentProps) {
         submit={() => handleSubmit()}
         onInput={(text) => setInput(text)}
         className="sticky bottom-2"
+        loading={ isLoading || status === "submitted" || status === "streaming" }
       />
       <div className="mt-4">
         <h2 className="text-xl font-semibold">Status: {status}</h2>

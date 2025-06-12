@@ -8,6 +8,10 @@ interface ChatBoxProps {
   className?: string;
   submit?: (text: string) => void;
   onInput?: (text: string) => void;
+  // if it's not empty, it will show an error message
+  errorMessage?: string;
+  // default is false
+  loading?: boolean;
 }
 
 export default function ChatBox(props: ChatBoxProps) {
@@ -23,9 +27,12 @@ export default function ChatBox(props: ChatBoxProps) {
       console.error("Content is empty.");
       return;
     }
+
+    // clean the content in div
+    ref.current.innerText = ""; // clear the content after submission
+
     // call the submit function with the content
     props.submit?.(content);
-    // clean the content of the div
   };
 
   const boxClickToFocus = () => {
@@ -34,9 +41,16 @@ export default function ChatBox(props: ChatBoxProps) {
 
   return (
     <Card
-      className={cn(props.className, "p-4 w-[1200px]")}
+      className={cn(
+        props.className, 
+        "p-3 w-[1200px] gap-2",
+        props.loading && "opacity-90 cursor-not-allowed"
+      )}
       onClick={boxClickToFocus}
     >
+      {props.errorMessage && props.errorMessage.length > 0 && (
+        <div className="rounded bg-red-900 px-2">{props.errorMessage}</div>
+      )}
       <div
         contentEditable
         ref={ref}

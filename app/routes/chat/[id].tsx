@@ -8,7 +8,7 @@ import type { Message } from "ai";
 import ChatBox from "~/components/modules/chatbox";
 import remarkGFM from "remark-gfm";
 import { useAPI } from "~/lib/hooks/api";
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useModel, useProvider } from "~/lib/hooks/model";
 import { cn } from "~/lib/utils";
 
@@ -16,9 +16,12 @@ export const clientLoader = requiredAuth;
 
 export default function Chat({ params }: Route.ComponentProps) {
   const location = useLocation();
-  const state = location.state ? ( location.state["content"] as string) : "";
+  const state = location.state ? (location.state["content"] as string) : "";
   const [provider, _setProvider] = useProvider();
   const [model, _setModel] = useModel();
+  const divRef = useRef<HTMLDivElement>(null);
+  const boxRef = useRef<HTMLDivElement>(null);
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const autoScrollEnabled = useRef(true);
 
@@ -56,11 +59,8 @@ export default function Chat({ params }: Route.ComponentProps) {
       handleSubmit(undefined, {
         body: appendBody,
       });
-      
-      // Scroll to bottom when submitting
-      setTimeout(() => {
-        scrollToBottom();
-      }, 100);
+
+      scrollToBottom();
     },
     [handleSubmit, scrollToBottom]
   );
@@ -72,10 +72,12 @@ export default function Chat({ params }: Route.ComponentProps) {
     [setInput]
   );
 
-
   const isAtBottom = useCallback(() => {
     const threshold = 100;
-    return window.innerHeight + window.scrollY >= document.body.offsetHeight - threshold;
+    return (
+      window.innerHeight + window.scrollY >=
+      document.body.offsetHeight - threshold
+    );
   }, []);
 
   // Track scroll position to enable/disable auto-scroll
@@ -92,8 +94,50 @@ export default function Chat({ params }: Route.ComponentProps) {
     return () => window.removeEventListener("scroll", handleScroll);
   }, [isAtBottom, status]);
 
+  const [diff, setDiff] = useState(9999999999);
+  // console.log("diff", diff);
+
+
+  // since it's related to the height of the div and box, we need to use useLayoutEffect
+  useLayoutEffect(() => {
+    
+    const resizeHandler = () => {
+      if (!divRef.current || !boxRef.current) return;
+      console.log("ResizeObserver triggered");
+      const boxHeight = boxRef.current.getBoundingClientRect().height;
+      const divHeight = divRef.current.getBoundingClientRect().height;
+
+      console.log("boxHeight", boxHeight);
+      console.log("divHeight", divHeight);
+
+      const diff = divHeight + boxHeight;
+      setDiff(diff);
+    }
+    // resizeObserver to handle dynamic content changes
+    const resizeObserver = new ResizeObserver(resizeHandler);
+    resizeHandler(); // Initial call to set the diff
+
+    if (divRef.current) {
+      console.log("Observing divRef", divRef.current);
+      resizeObserver.observe(divRef.current);
+    }
+
+    if (boxRef.current) {
+      console.log("Observing boxRef", boxRef.current);
+      resizeObserver.observe(boxRef.current);
+    }
+
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, [isLoading]);
+
   useEffect(() => {
-    if (messages.length > 0 && autoScrollEnabled.current && (status === "streaming" || isAtBottom())) {
+    if (
+      messages.length > 0 &&
+      autoScrollEnabled.current &&
+      (status === "streaming" || isAtBottom())
+    ) {
       scrollToBottom();
     }
   }, [messages, scrollToBottom, isAtBottom, status]);
@@ -122,35 +166,49 @@ export default function Chat({ params }: Route.ComponentProps) {
   }
 
   return (
-    <div className="max-w-4xl mx-auto">
-      <div className="flex h-full w-full  items-center justify-start">
-        <h1 className="text-2xl font-bold">Chat Room</h1>
-      </div>
-      {messages.map((message) => (
-        <div
-          className="prose prose-invert prose-zinc w-full max-w-4xl flex gap-x-2"
-          key={message.id}
-        >
-          <div className={cn(
-            "rounded-full bg-amber-50 size-6.5 flex-none sticky top-4",
-            message.role === "user" ? "bg-blue-500 text-white" : "bg-gray-500 text-white"
-          )}>{message.role[0]}</div>
-          <div className="flex-1 *:first:mt-0">
-            <Markdown key={message.id} remarkPlugins={[remarkGFM]}>
-              {message.content}
-            </Markdown>
-          </div>
+    <>
+      <div className="max-w-4xl mx-auto" ref={divRef}>
+        <div className="flex h-full w-full  items-center justify-start">
+          <h1 className="text-2xl font-bold">Chat Room</h1>
         </div>
-      ))}
-      {/* ref for bottom check */}
-      <div ref={messagesEndRef} />
-
+        {messages.map((message) => (
+          <div
+            className="prose prose-invert prose-zinc w-full max-w-4xl flex gap-x-2"
+            key={message.id}
+          >
+            <div
+              className={cn(
+                "rounded-full bg-amber-50 size-6.5 flex-none sticky top-4 mb-5",
+                message.role === "user"
+                  ? "bg-blue-500 text-white"
+                  : "bg-gray-500 text-white"
+              )}
+            >
+              {message.role[0]}
+            </div>
+            <div className="flex-1 *:first:mt-0">
+              <Markdown key={message.id} remarkPlugins={[remarkGFM]}>
+                {message.content}
+              </Markdown>
+            </div>
+          </div>
+        ))}
+        {/* ref for bottom check */}
+        <div
+          ref={messagesEndRef}
+          className="translate-y-96"
+        />
+      </div>
+      <div style={{ 
+        height: `calc( 100vh - ${diff}px - 16px)`
+      }} />
       <ChatBox
         submit={handleActuallySubmit}
         onInput={handleInput}
-        className="sticky bottom-2"
+        className="mx-auto sticky bottom-4"
         loading={isLoading || status === "submitted" || status === "streaming"}
+        ref={boxRef}
       />
-    </div>
+    </>
   );
 }

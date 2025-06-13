@@ -24,6 +24,7 @@ interface ChatBoxProps {
   // default is false
   loading?: boolean;
   disabled?: boolean;
+  ref?: React.RefObject<HTMLDivElement|null>;
 }
 
 export default function ChatBox(props: ChatBoxProps) {
@@ -79,6 +80,7 @@ export default function ChatBox(props: ChatBoxProps) {
         props.loading && "opacity-90 cursor-not-allowed"
       )}
       onClick={boxClickToFocus}
+      ref={props.ref}
     >
       {props.errorMessage && props.errorMessage.length > 0 && (
         <div className="rounded bg-red-900 px-2">{props.errorMessage}</div>

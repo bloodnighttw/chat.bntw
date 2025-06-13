@@ -90,12 +90,15 @@ export default function Chat({ params }: Route.ComponentProps) {
       </div>
       {messages.map((message) => (
         <div
-          className="prose prose-invert prose-zinc w-full max-w-4xl"
+          className="prose prose-invert prose-zinc w-full max-w-4xl flex gap-x-2"
           key={message.id}
         >
-          <Markdown key={message.id} remarkPlugins={[remarkGFM]}>
-            {message.content}
-          </Markdown>
+          <div className="rounded-full bg-amber-50 size-6.5 flex-none sticky top-4">{message.role[0]}</div>
+          <div className="flex-1 *:first:mt-0">
+            <Markdown key={message.id} remarkPlugins={[remarkGFM]}>
+              {message.content}
+            </Markdown>
+          </div>
         </div>
       ))}
 
@@ -105,9 +108,6 @@ export default function Chat({ params }: Route.ComponentProps) {
         className="sticky bottom-2"
         loading={isLoading || status === "submitted" || status === "streaming"}
       />
-      <div className="mt-4">
-        <h2 className="text-xl font-semibold">Status: {status}</h2>
-      </div>
     </div>
   );
 }

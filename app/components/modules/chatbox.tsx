@@ -13,7 +13,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
-import useLocalStorage from "~/lib/hooks/localstorage";
+import { useModel, useProvider } from "~/lib/hooks/model";
 
 interface ChatBoxProps {
   className?: string;
@@ -23,46 +23,17 @@ interface ChatBoxProps {
   errorMessage?: string;
   // default is false
   loading?: boolean;
-  providerRef?: React.RefObject<keyof Models | null>;
-  modelRef?: React.RefObject<string | null>;
+  disabled?: boolean;
 }
 
 export default function ChatBox(props: ChatBoxProps) {
   const ref = useRef<HTMLDivElement>(null);
-  const [preferModel, _setPreferences] = useLocalStorage<
-    Record<string, string>
-  >("provider-model", {});
-  const [preferProvider, setPreferProvider] = useLocalStorage<
-    keyof Models | null
-  >("provider", null);
+  const [provider, setProvider] = useProvider();
+  const [model, setModel] = useModel();
 
-  // you can only set 1 key-value pair at one life cycle
-  const setPreferModel = (key: string, value: string) => {
-    _setPreferences({ ...preferModel, [key]: value });
-  };
-
-  const { data, isLoading } = useAPI<Models>(
-    "/chat",
-    (res) => {
-      const missingPreference: Record<string, string> = {};
-      Object.keys(res).forEach((p) => {
-        if (!preferModel[p]) {
-          // set the default model for the provider
-          const lastModel =
-            res[p as keyof Models][res[p as keyof Models].length - 1];
-          missingPreference[p] = lastModel;
-        }
-      });
-
-      _setPreferences({
-        ...preferModel,
-        ...missingPreference,
-      });
-    },
-    {
-      dedupingInterval: 1000 * 60 * 60, // 1 hour
-    }
-  );
+  const { data, isLoading } = useAPI<Models>("/chat", undefined, {
+    dedupingInterval: 1000 * 60 * 60, // 1 hour
+  });
 
   const handleSubmit = () => {
     // get the content of the div
@@ -72,13 +43,13 @@ export default function ChatBox(props: ChatBoxProps) {
     }
 
     // if no provider is selected, show an error
-    if (!preferProvider) {
+    if (!provider) {
       console.error("No provider selected.");
       return;
     }
 
     // if no model is selected, show an error
-    if (!preferModel[preferProvider]) {
+    if (!model) {
       console.error("No model selected for the provider.");
       return;
     }
@@ -93,7 +64,7 @@ export default function ChatBox(props: ChatBoxProps) {
     ref.current.innerText = ""; // clear the content after submission
 
     // call the submit function with the content
-    props.submit?.(content, preferProvider, preferModel[preferProvider]);
+    props.submit?.(content, provider, model);
   };
 
   const boxClickToFocus = () => {
@@ -104,7 +75,7 @@ export default function ChatBox(props: ChatBoxProps) {
     <Card
       className={cn(
         props.className,
-        "p-3 w-[1200px] gap-2",
+        "p-3 max-w-4xl gap-2 mt-4",
         props.loading && "opacity-90 cursor-not-allowed"
       )}
       onClick={boxClickToFocus}
@@ -134,7 +105,7 @@ export default function ChatBox(props: ChatBoxProps) {
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="secondary" className="h-6 text-sm">
-              {preferProvider ? preferProvider : "Select Provider"}
+              {provider ?? "Select Provider"}
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="w-24" align="start">
@@ -149,8 +120,8 @@ export default function ChatBox(props: ChatBoxProps) {
                   <DropdownMenuCheckboxItem
                     key={p}
                     className="text-sm"
-                    checked={preferProvider === p}
-                    onClick={() => setPreferProvider(p as keyof Models)}
+                    checked={provider === p}
+                    onClick={() => setProvider(p as keyof Models)}
                   >
                     {p}
                   </DropdownMenuCheckboxItem>
@@ -159,39 +130,38 @@ export default function ChatBox(props: ChatBoxProps) {
           </DropdownMenuContent>
         </DropdownMenu>
 
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="secondary" className="h-6 text-sm ml-2">
-              {preferProvider && preferModel[preferProvider]
-                ? preferModel[preferProvider]
-                : "Select Model"}
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-48" align="start">
-            <DropdownMenuLabel className="text-center">Model</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            {data &&
-              preferProvider &&
-              data[preferProvider].map((model) => (
-                <DropdownMenuCheckboxItem
-                  key={model}
-                  className="text-sm"
-                  checked={preferModel[preferProvider] === model}
-                  onClick={() => setPreferModel(preferProvider, model)}
-                >
-                  {model}
-                </DropdownMenuCheckboxItem>
-              ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
-
-        {isLoading && (
-          <div className="ml-2 text-sm text-gray-500">Loading models...</div>
+        {provider && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="secondary" className="h-6 text-sm ml-2">
+                {model ?? "Select Model"}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-48" align="start">
+              <DropdownMenuLabel className="text-center">
+                Model
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              {data &&
+                data[provider!].map((m) => (
+                  <DropdownMenuCheckboxItem
+                    key={m}
+                    className="text-sm"
+                    checked={model === m}
+                    onClick={() => setModel(m)}
+                  >
+                    {m}
+                  </DropdownMenuCheckboxItem>
+                ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
         )}
+
         <Button
           variant="secondary"
           className="ml-auto h-6"
           onClick={handleSubmit}
+          disabled={props.disabled || isLoading || props.loading || !provider || !model}
         >
           <SendHorizonal className="size-3" />
         </Button>

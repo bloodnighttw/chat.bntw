@@ -9,12 +9,15 @@ import ChatBox from "~/components/modules/chatbox";
 import remarkGFM from "remark-gfm";
 import { useAPI } from "~/lib/hooks/api";
 import { useCallback } from "react";
+import { useModel, useProvider } from "~/lib/hooks/model";
 
 export const clientLoader = requiredAuth;
 
 export default function Chat({ params }: Route.ComponentProps) {
   const location = useLocation();
   const state = (location.state["content"] as string) ?? "";
+  const [provider, _setProvider] = useProvider();
+  const [model, _setModel] = useModel();
 
   const { messages, handleSubmit, setMessages, setInput, status } = useChat({
     api: `/api/chat/${params.id}`,
@@ -27,7 +30,7 @@ export default function Chat({ params }: Route.ComponentProps) {
     (res) => {
       if (res) {
         if (res.length === 0) {
-          handleSubmit();
+          handleSubmit(undefined, { body: { provider, model } });
         } else {
           setInput("");
           setMessages(res);
@@ -81,13 +84,13 @@ export default function Chat({ params }: Route.ComponentProps) {
   }
 
   return (
-    <div className="w-[1200px] mx-auto">
+    <div className="max-w-4xl mx-auto">
       <div className="flex h-full w-full  items-center justify-start">
         <h1 className="text-2xl font-bold">Chat Room</h1>
       </div>
       {messages.map((message) => (
         <div
-          className="prose prose-invert prose-zinc w-full max-w-[1200px]"
+          className="prose prose-invert prose-zinc w-full max-w-4xl"
           key={message.id}
         >
           <Markdown key={message.id} remarkPlugins={[remarkGFM]}>

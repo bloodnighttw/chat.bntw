@@ -37,27 +37,31 @@ export default [
     rules: {
       // TypeScript recommended rules
       ...typescript.configs.recommended.rules,
-      
+
       // React recommended rules
       ...react.configs.recommended.rules,
       ...react.configs["jsx-runtime"].rules,
-      
+
       // React Hooks rules
       ...reactHooks.configs.recommended.rules,
-      "quotes": ["error", "double"],
+      quotes: ["error", "double"],
       "prefer-const": "error",
       "@typescript-eslint/consistent-type-imports": "error",
-      
+
       // Custom React rules
       "react/react-in-jsx-scope": "off",
       "react/jsx-uses-vars": "error",
-      
+
       // React Hooks rules
       "react-hooks/rules-of-hooks": "error",
       "react-hooks/exhaustive-deps": "warn",
-      
+
       // Disable JS rules that conflict with TypeScript
       "no-unused-vars": "off",
+      "@typescript-eslint/no-unused-vars": [
+        "error",
+        { argsIgnorePattern: "^_", varsIgnorePattern: "^_" },
+      ],
       "no-undef": "off",
     },
   },
@@ -68,7 +72,7 @@ export default [
       "node_modules/",
       "coverage/",
       "*.min.js",
-      ".react-router/"
+      ".react-router/",
     ],
   },
 ];

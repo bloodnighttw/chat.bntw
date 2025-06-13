@@ -16,7 +16,7 @@ export const clientLoader = requiredAuth;
 
 export default function Chat({ params }: Route.ComponentProps) {
   const location = useLocation();
-  const state = (location.state["content"] as string) ?? "";
+  const state = location.state ? ( location.state["content"] as string) : "";
   const [provider, _setProvider] = useProvider();
   const [model, _setModel] = useModel();
   const messagesEndRef = useRef<HTMLDivElement>(null);

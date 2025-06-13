@@ -135,7 +135,7 @@ export default function Chat({ params }: Route.ComponentProps) {
             "rounded-full bg-amber-50 size-6.5 flex-none sticky top-4",
             message.role === "user" ? "bg-blue-500 text-white" : "bg-gray-500 text-white"
           )}>{message.role[0]}</div>
-          <div className="*:first:mt-0">
+          <div className="flex-1 *:first:mt-0">
             <Markdown key={message.id} remarkPlugins={[remarkGFM]}>
               {message.content}
             </Markdown>

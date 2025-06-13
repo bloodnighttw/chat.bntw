@@ -20,6 +20,7 @@ export default function Chat({ params }: Route.ComponentProps) {
   const [provider, _setProvider] = useProvider();
   const [model, _setModel] = useModel();
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const autoScrollEnabled = useRef(true);
 
   const { messages, handleSubmit, setMessages, setInput, status } = useChat({
     api: `/api/chat/${params.id}`,
@@ -41,6 +42,10 @@ export default function Chat({ params }: Route.ComponentProps) {
     }
   );
 
+  const scrollToBottom = useCallback(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, []);
+
   const handleActuallySubmit = useCallback(
     (_: string, provider: keyof Models, m: string) => {
       const appendBody: ChatStream = {
@@ -51,8 +56,13 @@ export default function Chat({ params }: Route.ComponentProps) {
       handleSubmit(undefined, {
         body: appendBody,
       });
+      
+      // Scroll to bottom when submitting
+      setTimeout(() => {
+        scrollToBottom();
+      }, 100);
     },
-    [handleSubmit]
+    [handleSubmit, scrollToBottom]
   );
 
   const handleInput = useCallback(
@@ -62,20 +72,31 @@ export default function Chat({ params }: Route.ComponentProps) {
     [setInput]
   );
 
-  const scrollToBottom = useCallback(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, []);
 
   const isAtBottom = useCallback(() => {
     const threshold = 100;
     return window.innerHeight + window.scrollY >= document.body.offsetHeight - threshold;
   }, []);
 
+  // Track scroll position to enable/disable auto-scroll
   useEffect(() => {
-    if (messages.length > 0 && isAtBottom()) {
+    const handleScroll = () => {
+      if (isAtBottom()) {
+        autoScrollEnabled.current = true;
+      } else if (status === "streaming") {
+        autoScrollEnabled.current = false;
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [isAtBottom, status]);
+
+  useEffect(() => {
+    if (messages.length > 0 && autoScrollEnabled.current && (status === "streaming" || isAtBottom())) {
       scrollToBottom();
     }
-  }, [messages, scrollToBottom, isAtBottom]);
+  }, [messages, scrollToBottom, isAtBottom, status]);
 
   if (isLoading) {
     return (
@@ -114,7 +135,7 @@ export default function Chat({ params }: Route.ComponentProps) {
             "rounded-full bg-amber-50 size-6.5 flex-none sticky top-4",
             message.role === "user" ? "bg-blue-500 text-white" : "bg-gray-500 text-white"
           )}>{message.role[0]}</div>
-          <div className="flex-1 *:first:mt-0">
+          <div className="*:first:mt-0">
             <Markdown key={message.id} remarkPlugins={[remarkGFM]}>
               {message.content}
             </Markdown>

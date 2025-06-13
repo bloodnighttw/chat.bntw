@@ -7,7 +7,6 @@ import tsconfigPaths from "vite-tsconfig-paths";
 export default defineConfig({
   plugins: [
     tailwindcss(),
-    // @ts-expect-error this plugin is not typed yet
     reactRouterHonoServer(),
     reactRouter(),
     tsconfigPaths(),

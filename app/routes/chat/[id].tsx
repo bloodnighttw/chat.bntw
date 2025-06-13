@@ -206,7 +206,7 @@ export default function Chat({ params }: Route.ComponentProps) {
         submit={handleActuallySubmit}
         onInput={handleInput}
         className="mx-auto sticky bottom-4"
-        loading={isLoading || status === "submitted" || status === "streaming"}
+        status={status}
         ref={boxRef}
       />
     </>

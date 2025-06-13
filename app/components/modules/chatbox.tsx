@@ -22,9 +22,9 @@ interface ChatBoxProps {
   // if it's not empty, it will show an error message
   errorMessage?: string;
   // default is false
-  loading?: boolean;
   disabled?: boolean;
-  ref?: React.RefObject<HTMLDivElement|null>;
+  status?: "error" | "submitted" | "streaming" | "ready";
+  ref?: React.RefObject<HTMLDivElement | null>;
 }
 
 export default function ChatBox(props: ChatBoxProps) {
@@ -37,6 +37,11 @@ export default function ChatBox(props: ChatBoxProps) {
   });
 
   const handleSubmit = () => {
+
+    if(props.status === "streaming" || props.status === "submitted") {
+      console.error("Cannot submit while streaming/submitted.");
+      return;
+    }
     // get the content of the div
     if (!ref.current) {
       console.error("Div reference is not set.");
@@ -75,9 +80,8 @@ export default function ChatBox(props: ChatBoxProps) {
   return (
     <Card
       className={cn(
-        props.className,
-        "p-3 max-w-4xl gap-2 mt-4",
-        props.loading && "opacity-90 cursor-not-allowed"
+        props.className, "p-3 max-w-4xl gap-2 mt-4",
+        props.disabled && "blur-xs cursor-not-allowed",
       )}
       onClick={boxClickToFocus}
       ref={props.ref}
@@ -158,12 +162,20 @@ export default function ChatBox(props: ChatBoxProps) {
             </DropdownMenuContent>
           </DropdownMenu>
         )}
+        <div className="ml-auto" />
 
         <Button
           variant="secondary"
-          className="ml-auto h-6"
+          className="h-6"
           onClick={handleSubmit}
-          disabled={props.disabled || isLoading || props.loading || !provider || !model}
+          disabled={
+            props.disabled ||
+            isLoading ||
+            !provider ||
+            !model ||
+            props.status === "streaming" ||
+            props.status === "submitted"
+          }
         >
           <SendHorizonal className="size-3" />
         </Button>

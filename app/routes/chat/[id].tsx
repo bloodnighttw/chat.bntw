@@ -8,8 +8,9 @@ import type { Message } from "ai";
 import ChatBox from "~/components/modules/chatbox";
 import remarkGFM from "remark-gfm";
 import { useAPI } from "~/lib/hooks/api";
-import { useCallback } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { useModel, useProvider } from "~/lib/hooks/model";
+import { cn } from "~/lib/utils";
 
 export const clientLoader = requiredAuth;
 
@@ -18,6 +19,7 @@ export default function Chat({ params }: Route.ComponentProps) {
   const state = (location.state["content"] as string) ?? "";
   const [provider, _setProvider] = useProvider();
   const [model, _setModel] = useModel();
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const { messages, handleSubmit, setMessages, setInput, status } = useChat({
     api: `/api/chat/${params.id}`,
@@ -60,6 +62,21 @@ export default function Chat({ params }: Route.ComponentProps) {
     [setInput]
   );
 
+  const scrollToBottom = useCallback(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, []);
+
+  const isAtBottom = useCallback(() => {
+    const threshold = 100;
+    return window.innerHeight + window.scrollY >= document.body.offsetHeight - threshold;
+  }, []);
+
+  useEffect(() => {
+    if (messages.length > 0 && isAtBottom()) {
+      scrollToBottom();
+    }
+  }, [messages, scrollToBottom, isAtBottom]);
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -93,7 +110,10 @@ export default function Chat({ params }: Route.ComponentProps) {
           className="prose prose-invert prose-zinc w-full max-w-4xl flex gap-x-2"
           key={message.id}
         >
-          <div className="rounded-full bg-amber-50 size-6.5 flex-none sticky top-4">{message.role[0]}</div>
+          <div className={cn(
+            "rounded-full bg-amber-50 size-6.5 flex-none sticky top-4",
+            message.role === "user" ? "bg-blue-500 text-white" : "bg-gray-500 text-white"
+          )}>{message.role[0]}</div>
           <div className="flex-1 *:first:mt-0">
             <Markdown key={message.id} remarkPlugins={[remarkGFM]}>
               {message.content}
@@ -101,6 +121,8 @@ export default function Chat({ params }: Route.ComponentProps) {
           </div>
         </div>
       ))}
+      {/* ref for bottom check */}
+      <div ref={messagesEndRef} />
 
       <ChatBox
         submit={handleActuallySubmit}

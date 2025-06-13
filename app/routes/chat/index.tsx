@@ -31,6 +31,7 @@ export default function Chat() {
     const state = {
       content: content, // Get the content of the div
     };
+    console.log(state);
     navigate(`/chat/${data.id}`, {
       state,
     }); // Navigate to the chat room page

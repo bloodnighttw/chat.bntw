@@ -17,7 +17,7 @@ import useLocalStorage from "~/lib/hooks/localstorage";
 
 interface ChatBoxProps {
   className?: string;
-  submit?: (provider: keyof Models, model: string) => void;
+  submit?: (text: string, provider: keyof Models, model: string) => void;
   onInput?: (text: string) => void;
   // if it's not empty, it will show an error message
   errorMessage?: string;
@@ -93,7 +93,7 @@ export default function ChatBox(props: ChatBoxProps) {
     ref.current.innerText = ""; // clear the content after submission
 
     // call the submit function with the content
-    props.submit?.(preferProvider, preferModel[preferProvider]);
+    props.submit?.(content, preferProvider, preferModel[preferProvider]);
   };
 
   const boxClickToFocus = () => {

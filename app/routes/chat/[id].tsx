@@ -16,21 +16,9 @@ export default function Chat({ params }: Route.ComponentProps) {
   const location = useLocation();
   const state = (location.state["content"] as string) ?? "";
 
-  const appendBody: ChatStream = {
-    provider: "google",
-    model: "gemini-2.0-flash",
-  };
-
-  const {
-    messages,
-    handleSubmit,
-    setMessages,
-    setInput,
-    status,
-  } = useChat({
+  const { messages, handleSubmit, setMessages, setInput, status } = useChat({
     api: `/api/chat/${params.id}`,
     id: params.id,
-    body: appendBody,
     initialInput: state,
   });
 
@@ -48,21 +36,26 @@ export default function Chat({ params }: Route.ComponentProps) {
     }
   );
 
-  const handleActuallySubmit = useCallback((provider: keyof Models, model: string) => {
-    const appendBody: ChatStream = {
-      provider,
-      model,
-    };
+  const handleActuallySubmit = useCallback(
+    (_: string, provider: keyof Models, m: string) => {
+      const appendBody: ChatStream = {
+        provider: provider,
+        model: m,
+      };
 
-    handleSubmit(undefined,{
-      body: appendBody
-    });
+      handleSubmit(undefined, {
+        body: appendBody,
+      });
+    },
+    [handleSubmit]
+  );
 
-  },[handleSubmit])
-
-  const handleInput = useCallback((text: string) => {
-    setInput(text);
-  }, [setInput]);
+  const handleInput = useCallback(
+    (text: string) => {
+      setInput(text);
+    },
+    [setInput]
+  );
 
   if (isLoading) {
     return (
@@ -97,7 +90,9 @@ export default function Chat({ params }: Route.ComponentProps) {
           className="prose prose-invert prose-zinc w-full max-w-[1200px]"
           key={message.id}
         >
-          <Markdown key={message.id} remarkPlugins={[remarkGFM]}>{message.content}</Markdown>
+          <Markdown key={message.id} remarkPlugins={[remarkGFM]}>
+            {message.content}
+          </Markdown>
         </div>
       ))}
 
@@ -105,7 +100,7 @@ export default function Chat({ params }: Route.ComponentProps) {
         submit={handleActuallySubmit}
         onInput={handleInput}
         className="sticky bottom-2"
-        loading={ isLoading || status === "submitted" || status === "streaming" }
+        loading={isLoading || status === "submitted" || status === "streaming"}
       />
       <div className="mt-4">
         <h2 className="text-xl font-semibold">Status: {status}</h2>
